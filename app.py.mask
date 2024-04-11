@@ -1,0 +1,55 @@
+from flask import Flask
+# from https://reintech.io/blog/create-web-service-python
+from flask import Flask, jsonify, request
+from agent import generate_response
+
+import uuid
+app = Flask(__name__)
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+
+tasks = [
+    {
+        'id': uuid.uuid4().hex,
+        'title': 'Buy groceries',
+        'description': 'Milk, Cheese, Pizza, Fruits',
+        'completed': False
+    },
+    {
+        'id': uuid.uuid4().hex,
+        'title': 'Learn Python',
+        'description': 'Learn how to create a web service with Python',
+        'completed': True
+    }
+]
+
+# @app.route('/tasks', methods=['GET'])
+# def get_tasks():
+#     return jsonify({'tasks': tasks})
+
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    return jsonify({'tasks': tasks})
+
+@app.route('/tasks', methods=['POST'])
+def create_task():
+    new_task = {
+        'id': uuid.uuid4().hex,
+        'title': request.json['title'],
+        'description': request.json['description'],
+        'completed': request.json.get('completed', False)
+    }
+    tasks.append(new_task)
+    return jsonify({'task': new_task})
+
+@app.route('/bot', methods=['POST'])
+def respond_bot():
+    new_resp=generate_response(request.json['user'])
+
+    return jsonify({'answer': new_resp})
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
